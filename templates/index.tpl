@@ -1,0 +1,16 @@
+		<div class="section no-pad-bot" id="index-banner" style="margin-top: 3em;">
+			<div class="container">
+				<img src="./assets/images/logov2nr3.png" style="width: 55%; display: block; margin: auto;"/>
+				<h1 class="header center orange-text">{$TITLEPLUGINS}</h1>
+				<div class="row center">
+					<h5 class="header col s12 light">{$TITLESMALL}</h5>
+				</div>
+				<div class="row center">
+{if $logoutbutton == ""}
+	{$loginbutton}
+{else}
+					<a href="/plugins.php"><span class="btn-flat">{$LOOKAROUND}</span></a>
+{/if}
+				</div>
+			</div>
+		</div>
