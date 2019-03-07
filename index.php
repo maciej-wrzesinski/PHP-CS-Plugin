@@ -1,8 +1,63 @@
-<?php require 'includes/steamauth/steamauth.php'; ?>
 <?php
+    /*
+     * Login handling
+     */
+    require('classes/login/LoginFacade.php');
+
+    $login = new LoginFacade();
+
+    if(isset($_GET['login']))
+    {
+        $_SESSION['steamid'] = $login->login();
+    }
+    elseif(isset($_GET['logout']))
+    {
+        $_SESSION['steamid'] = $login->logout();
+    }
+
+
+    /*
+     * Template handling
+     */
+    require('classes/template/TemplateFacade.php');
+    $template = new TemplateFacade();
+
+
+    /*
+     * Language handling
+     */
+    include('includes/lang.php');
+
+    $template->getSmarty()->assign("TITLE", $lang['TITLE']);
+    $template->getSmarty()->assign("TITLE2", $lang['HOME']);
+
+    $template->getSmarty()->assign("HOME", $lang['HOME']);
+    $template->getSmarty()->assign("PLUGINS", $lang['PLUGINS']);
+    $template->getSmarty()->assign("BUY", $lang['BUY']);
+    $template->getSmarty()->assign("USERP", $lang['USERP']);
+    $template->getSmarty()->assign("ADMIN", $lang['ADMIN']);
+    $template->getSmarty()->assign("OPINIONS", $lang['OPINIONS']);
+
+    $template->getSmarty()->assign("TITLEPLUGINS", $lang['TITLEPLUGINS']);
+    $template->getSmarty()->assign("TITLESMALL", $lang['TITLESMALL']);
+    $template->getSmarty()->assign("LOOKAROUND", $lang['LOOKAROUND']);
+
+    if(!isset($_SESSION['steamid']) || $_SESSION['steamid'] === 'fail')
+    {
+        $template->getSmarty()->assign("loginbuttonn", "<a href='?login'>".$lang['LOGIN']."</a>");
+        $template->getSmarty()->assign("loginbutton2", "<a href='?login' class='btn-flat'>".$lang['LOGIN']."</a>");
+        $template->getSmarty()->assign("loginbutton", "<a href='?login'><img src='./assets/images/steamloginv2.png'></a>");
+    }
+
+
+    /*
+     * Show HTML
+     */
+    $template->displayHTML(basename(__FILE__, '.php'));
+
+/*
 	include("config/global.php");
 	include("includes/functions.php");
-	include("includes/lang.php");
 	
 	////Smarty 
 	require_once("smarty/Smarty.class.php");
@@ -47,30 +102,13 @@
 			}
 		}
 	}
+
 	
-	$smarty->assign("TITLE", $lang['TITLE']);
-	$smarty->assign("TITLE2", $lang['HOME']);
-	
-	$smarty->assign("HOME", $lang['HOME']);
-	$smarty->assign("PLUGINS", $lang['PLUGINS']);
-	$smarty->assign("BUY", $lang['BUY']);
-	$smarty->assign("USERP", $lang['USERP']);
-	$smarty->assign("ADMIN", $lang['ADMIN']);
-	$smarty->assign("OPINIONS", $lang['OPINIONS']);
-	
-	$smarty->assign("TITLEPLUGINS", $lang['TITLEPLUGINS']);
-	$smarty->assign("TITLESMALL", $lang['TITLESMALL']);
-	$smarty->assign("LOOKAROUND", $lang['LOOKAROUND']);
-	
-	$smarty->assign("yesthisisindex", "1");
+
 	
 	//Funny quotes
 	$smarty->assign("QUOTES", $lang['QUOTE'][array_rand($lang['QUOTE'])]);
 	$smarty->assign("DESCRIPTION", $lang['DESCRIPTION']);
 	$smarty->assign("KEYWORDS", $lang['KEYWORDS']);
-	
-	////Display HTML
-	$smarty->display('_HEADER.tpl');
-	$smarty->display('index.tpl');
-	$smarty->display('_FOOTER.tpl');
-?>
+
+    */
