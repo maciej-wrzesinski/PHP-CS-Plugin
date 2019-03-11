@@ -2,8 +2,6 @@
 	$lang = array();
 
 	$lang['TITLE'] = 'Pluginy CS:GO';
-	$lang['LOGIN'] = 'Zaloguj';
-	$lang['LOGOUT'] = 'Wyloguj';
 	$lang['DESCRIPTION'] = 'Profesjonalne płatne pluginy csgo, wysoka jakość, doskonała wydajność przy braku błędów i bugów - Pluginy Sourcemod - Generator VIPa - Pobierz CS GO - Download plugin - Download CS pluginy - Serwer CS - Aktualizacja CS';
 	$lang['KEYWORDS'] = 'server, serwer, cs go, csgo, steam, plugin, source, vip, counter strike, plugins, smx, sourcemod, half-life, csgo crash, csgo case, pluginy, pluginy cs';
 
@@ -15,6 +13,8 @@
 	$lang['ADMIN'] = 'Panel Admina';
 	$lang['USERP'] = 'Panel Użytkownika';
 	$lang['OPINIONS'] = 'Opinie';
+    $lang['LOGIN'] = 'Zaloguj';
+    $lang['LOGOUT'] = 'Wyloguj';
 	
 	//index
 	$lang['TITLEPLUGINS'] = 'Profesjonalne pluginy Counter-Strike';
@@ -126,5 +126,6 @@
 	$lang['OPINIONSABOUT'] = 'Opinie o nas';
 	$lang['OPINIONSFROM'] = 'Napisane przez zalogowanych użytkowników';
 	$lang['SUBMITOPINION'] = 'Wyślij opinię';
-	
-?>
+
+    foreach ($lang as $key => $value)
+        $template->getSmarty()->assign($key, $value);

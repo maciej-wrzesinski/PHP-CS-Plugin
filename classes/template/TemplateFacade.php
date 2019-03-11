@@ -2,12 +2,14 @@
 
 include('Smarty\Smarty.class.php');
 
-class TemplateFacade {
+class TemplateFacade
+{
     private $smarty;
 
     public function __construct()
     {
         $this->smarty = new Smarty();
+        $this->smarty->error_reporting = 0;
     }
 
     public function getSmarty()

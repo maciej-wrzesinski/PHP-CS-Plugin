@@ -2,8 +2,6 @@
 	$lang = array();
 
 	$lang['TITLE'] = 'CS:GO Plugins';
-	$lang['LOGIN'] = 'Login';
-	$lang['LOGOUT'] = 'Logout';
 	$lang['DESCRIPTION'] = 'Professional paid csgo plugins, high quality, excellent performance with no errors and bugs - Sourcemod Plugins - Plugin fixes - VIP Generator - Plugin updates - CS Server - Plugin patches';
 	$lang['KEYWORDS'] = 'server, development, cs go, steam, plugin, source, counter strike, plugins, vip, smx, sourcemod, source mod, sourcemod plugins, buy plugin, buy csgo, half-life, csgo crash, csgo case, cs generator, csgo generator';
 	//6 pierwszych zajebiste
@@ -15,6 +13,8 @@
 	$lang['ADMIN'] = 'Admin Panel';
 	$lang['USERP'] = 'User Panel';
 	$lang['OPINIONS'] = 'Opinions';
+    $lang['LOGIN'] = 'Login';
+    $lang['LOGOUT'] = 'Logout';
 	
 	//index
 	$lang['TITLEPLUGINS'] = 'Professional Counter-Strike Plugins';
@@ -126,5 +126,6 @@
 	$lang['OPINIONSABOUT'] = 'Opinions about us';
 	$lang['OPINIONSFROM'] = 'Written by logged in users';
 	$lang['SUBMITOPINION'] = 'Submit opinion';
-	
-?>
+
+    foreach ($lang as $key => $value)
+        $template->getSmarty()->assign($key, $value);

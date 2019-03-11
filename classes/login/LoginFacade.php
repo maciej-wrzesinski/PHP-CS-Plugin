@@ -2,7 +2,8 @@
 
 include('LightOpenID\openid.php');
 
-class LoginFacade {
+class LoginFacade
+{
     private $openid;
 
     public function __construct()
