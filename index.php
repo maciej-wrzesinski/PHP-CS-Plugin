@@ -76,6 +76,12 @@
 
 
     /*
+     * This is something that will change for sure with every subpage
+     */
+    $template->getSmarty()->assign("TITLE2", $lang['HOME']);
+
+
+    /*
      * Show HTML
      */
     $template->displayHTML(basename(__FILE__, '.php'));

@@ -129,3 +129,4 @@
 
     foreach ($lang as $key => $value)
         $template->getSmarty()->assign($key, $value);
+    $template->getSmarty()->assign("QUOTES", $lang['QUOTE'][array_rand($lang['QUOTE'])]);
