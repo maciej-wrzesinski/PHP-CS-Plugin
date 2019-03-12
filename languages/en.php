@@ -128,5 +128,5 @@
 	$lang['SUBMITOPINION'] = 'Submit opinion';
 
     foreach ($lang as $key => $value)
-        $template->getSmarty()->assign($key, $value);
-    $template->getSmarty()->assign("QUOTES", $lang['QUOTE'][array_rand($lang['QUOTE'])]);
+        $template->assignVariable($key, $value);
+    $template->assignVariable("QUOTES", $lang['QUOTE'][array_rand($lang['QUOTE'])]);

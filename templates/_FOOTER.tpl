@@ -5,9 +5,6 @@
 					<center>© 2017 <a class="orange-text text-lighten-3" href="#">CS-Plugin.com</a> All rights reserved.</center>
 				</div>
 			</div>
-{if $yesthisisindex != "1"}
-			<ul class="hide-on-med-and-down"><a href="#"><img src="/assets/images/logov2nr3.png" style="width: 7%; position: absolute; right: 15px; bottom: 15px;" /></a></ul>
-{/if}
 		</footer>
 
 	  <!--  Scripts-->

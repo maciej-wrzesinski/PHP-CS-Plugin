@@ -37,16 +37,16 @@
      */
     if(!isset($_SESSION['steamid']) || $_SESSION['steamid'] === 'fail')
     {
-        $template->getSmarty()->assign("loginbuttonn", "<a href='?login'>".$lang['LOGIN']."</a>");
-        $template->getSmarty()->assign("loginbutton2", "<a href='?login' class='btn-flat'>".$lang['LOGIN']."</a>");
-        $template->getSmarty()->assign("loginbutton", "<a href='?login'><img src='./assets/images/steamloginv2.png'></a>");
+        $template->assignVariable("loginbuttonn", "<a href='?login'>".$lang['LOGIN']."</a>");
+        $template->assignVariable("loginbutton2", "<a href='?login' class='btn-flat'>".$lang['LOGIN']."</a>");
+        $template->assignVariable("loginbutton", "<a href='?login'><img src='./assets/images/steamloginv2.png'></a>");
     }
     else
     {
         $STEAMID = toSteamID($_SESSION['steamid']);
 
-        $smarty->assign("logoutbutton", "<a href='?logout' class='btn-flat'>".$lang['LOGOUT']."</a>");
-        $smarty->assign("logoutbuttonn", "<a href='?logout'>".$lang['LOGOUT']."</a>");
+        $smarty->assignVariable("logoutbutton", "<a href='?logout' class='btn-flat'>".$lang['LOGOUT']."</a>");
+        $smarty->assignVariable("logoutbuttonn", "<a href='?logout'>".$lang['LOGOUT']."</a>");
         include("includes/steamauth/userInfo.php");
         include("config/db.php");
 
@@ -69,7 +69,7 @@
                 $USERID2 = $row[0];
 
             if($USERID2 != 0){
-                $smarty->assign("isadmin", "1");
+                $smarty->assignVariable("isadmin", "1");
             }
         }
     }
@@ -78,13 +78,14 @@
     /*
      * This is something that will change for sure with every subpage
      */
-    $template->getSmarty()->assign("TITLE2", $lang['HOME']);
+    $template->assignVariable("TITLE2", $lang['HOME']);
 
 
     /*
      * Show HTML
      */
-    $template->displayHTML(basename(__FILE__, '.php'));
+    $fileName = basename(__FILE__, '.php');
+    $template->displayHTML($fileName);
 
 /*
 	include("config/global.php");

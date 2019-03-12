@@ -12,20 +12,20 @@ class TemplateFacade
         $this->smarty->error_reporting = 0;
     }
 
-    public function getSmarty()
+    public function assignVariable($name, $value)
     {
-        return $this->smarty;
+        return $this->smarty->assign($name, $value);
+    }
+
+    public function displayTemplate($name)
+    {
+        return $this->smarty->display($name);
     }
 
     public function displayHTML($filename)
     {
-        if($filename !== 'index')
-            $this->smarty->assign("yesthisisindex", "1");
-        else
-            $this->smarty->assign("yesthisisindex", "0");
-
-        $this->smarty->display('_HEADER.tpl');
-        $this->smarty->display($filename.'.tpl');
-        $this->smarty->display('_FOOTER.tpl');
+        $this->displayTemplate('_HEADER.tpl');
+        $this->displayTemplate($filename.'.tpl');
+        $this->displayTemplate('_FOOTER.tpl');
     }
 }
