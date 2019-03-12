@@ -41,11 +41,11 @@
 {if $isadmin != ""}
 						<a href="admin.php" class='btn-flat'>{$ADMIN}</a>
 {/if}
-{if $logoutbutton != ""}
+{if $logout_button_header != ""}
 						<a href="user.php" class='btn-flat'>{$USERP}</a>
-						{$logoutbutton}
+						{$logout_button_header}
 {/if}
-						{$loginbutton2}
+						{$login_button_header}
 					</li>
 				</ul>
 				<ul id="nav-mobile" class="side-nav" style="transform: translateX(-100%);">
@@ -58,11 +58,11 @@
 {if $isadmin != ""}
 						<a href="admin.php">{$ADMIN}</a>
 {/if}
-{if $logoutbutton != ""}
+{if $logout_button_mobile != ""}
 						<a href="user.php">{$USERP}</a>
-						{$logoutbuttonn}
+						{$logout_button_mobile}
 {/if}
-						{$loginbuttonn}
+						{$login_button_mobile}
 						<a href="#"></a>
 						<a href="?lang=en" style="padding-right: 0px;"><img src="./assets/images/en.gif"> English</a>
 						<a href="?lang=pl" style="padding-right: 0px;"><img src="./assets/images/pl.gif"> Polski</a>

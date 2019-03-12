@@ -37,31 +37,29 @@
      */
     if(!isset($_SESSION['steamid']) || $_SESSION['steamid'] === 'fail')
     {
-        $template->assignVariable("loginbuttonn", "<a href='?login'>".$lang['LOGIN']."</a>");
-        $template->assignVariable("loginbutton2", "<a href='?login' class='btn-flat'>".$lang['LOGIN']."</a>");
-        $template->assignVariable("loginbutton", "<a href='?login'><img src='./assets/images/steamloginv2.png'></a>");
+        $template->assignVariable("login_button_main", "<a href='?login'><img src='./assets/images/steamloginv2.png'></a>");
+        $template->assignVariable("login_button_mobile", "<a href='?login'>".$lang['LOGIN']."</a>");
+        $template->assignVariable("login_button_header", "<a href='?login' class='btn-flat'>".$lang['LOGIN']."</a>");
     }
     else
     {
-        $STEAMID = toSteamID($_SESSION['steamid']);
+        $template->assignVariable("logout_button_header", "<a href='?logout' class='btn-flat'>".$lang['LOGOUT']."</a>");
+        $template->assignVariable("logout_button_mobile", "<a href='?logout'>".$lang['LOGOUT']."</a>");
 
-        $smarty->assignVariable("logoutbutton", "<a href='?logout' class='btn-flat'>".$lang['LOGOUT']."</a>");
-        $smarty->assignVariable("logoutbuttonn", "<a href='?logout'>".$lang['LOGOUT']."</a>");
-        include("includes/steamauth/userInfo.php");
         include("config/db.php");
 
         $USERID = 0;
-        $query = "SELECT id FROM `".$TABLE_USERS."` WHERE `sid` = '".$STEAMID."';";
+        $query = "SELECT id FROM `".$TABLE_USERS."` WHERE `sid` = '".$_SESSION['steamid']."';";
         $result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
         while($row = mysqli_fetch_row($result))
             $USERID = $row[0];
 
         if($USERID == 0){//dodawanie usera
-            $query = "INSERT INTO `".$TABLE_USERS."` (sid, level, opinion) VALUES ('".$STEAMID."', '0', '');";
+            $query = "INSERT INTO `".$TABLE_USERS."` (sid, level, opinion) VALUES ('".$_SESSION['steamid']."', '0', '');";
             $result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
         }
         else{
-            $query = "SELECT id FROM `".$TABLE_USERS."` WHERE `sid` = '".$STEAMID."' AND `level` = '1';";
+            $query = "SELECT id FROM `".$TABLE_USERS."` WHERE `sid` = '".$_SESSION['steamid']."' AND `level` = '1';";
             $result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
 
             $USERID2 = 0;
@@ -69,7 +67,7 @@
                 $USERID2 = $row[0];
 
             if($USERID2 != 0){
-                $smarty->assignVariable("isadmin", "1");
+                $template->assignVariable("isadmin", "1");
             }
         }
     }
