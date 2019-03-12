@@ -1,5 +1,4 @@
 <?php
-	//SQL
 	$SQL_HOSTNAME = "localhost";
 	$SQL_DATABASE = "csplugin";
 	$SQL_USERNAME = "root";
