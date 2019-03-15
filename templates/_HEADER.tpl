@@ -43,9 +43,9 @@
 {/if}
 {if $logout_button_header != ""}
 						<a href="user.php" class='btn-flat'>{$USERP}</a>
-						{$logout_button_header}
+						<a href='?logout' class='btn-flat'>{$LOGOUT}</a>
 {/if}
-						{$login_button_header}
+						<a href='?login' class='btn-flat'>{$LOGIN}</a>
 					</li>
 				</ul>
 				<ul id="nav-mobile" class="side-nav" style="transform: translateX(-100%);">
@@ -60,9 +60,9 @@
 {/if}
 {if $logout_button_mobile != ""}
 						<a href="user.php">{$USERP}</a>
-						{$logout_button_mobile}
+						<a href='?logout'>{$LOGOUT}</a>
 {/if}
-						{$login_button_mobile}
+						<a href='?login'>{$LOGIN}</a>
 						<a href="#"></a>
 						<a href="?lang=en" style="padding-right: 0px;"><img src="./assets/images/en.gif"> English</a>
 						<a href="?lang=pl" style="padding-right: 0px;"><img src="./assets/images/pl.gif"> Polski</a>

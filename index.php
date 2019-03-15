@@ -37,15 +37,14 @@
      */
     if(!isset($_SESSION['steamid']) || $_SESSION['steamid'] === 'fail')
     {
-        $template->assignVariable("login_button_main", "<a href='?login'><img src='./assets/images/steamloginv2.png'></a>");
-        $template->assignVariable("login_button_mobile", "<a href='?login'>".$lang['LOGIN']."</a>");
-        $template->assignVariable("login_button_header", "<a href='?login' class='btn-flat'>".$lang['LOGIN']."</a>");
+        $template->assignVariable("login_button_main", "1");
+        $template->assignVariable("login_button_mobile", "1");
+        $template->assignVariable("login_button_header", "1");
     }
     else
     {
-        $template->assignVariable("logout_button_header", "<a href='?logout' class='btn-flat'>".$lang['LOGOUT']."</a>");
-        $template->assignVariable("logout_button_mobile", "<a href='?logout'>".$lang['LOGOUT']."</a>");
-
+        $template->assignVariable("logout_button_header", "1");
+        $template->assignVariable("logout_button_mobile", "1");
     }
 
     require('classes/database/DatabaseSingleton.php');
@@ -53,17 +52,21 @@
     $connection = $db->getConnection();
 
     $USERID = 0;
-    $query = "SELECT id FROM `".$TABLE_USERS."` WHERE `sid` = '".$_SESSION['steamid']."';";
+    $USERLEVEL = 0;
+    $query = "SELECT id, level FROM `csp_users` WHERE `sid` = '".$_SESSION['steamid']."';";
     $result = mysqli_query($connection, $query) or die("Connection error".mysqli_error($connection));
     while($row = mysqli_fetch_row($result))
+    {
         $USERID = $row[0];
+        $USERLEVEL = $row[1];
+    }
 
     if($USERID == 0){//dodawanie usera
-        $query = "INSERT INTO `".$TABLE_USERS."` (sid, level, opinion) VALUES ('".$_SESSION['steamid']."', '0', '');";
+        $query = "INSERT INTO `csp_users` (sid, level, opinion) VALUES ('".$_SESSION['steamid']."', '0', '');";
         $result = mysqli_query($connection, $query) or die("Connection error".mysqli_error($connection));
     }
     else{
-        $query = "SELECT id FROM `".$TABLE_USERS."` WHERE `sid` = '".$_SESSION['steamid']."' AND `level` = '1';";
+        $query = "SELECT id FROM `csp_users` WHERE `sid` = '".$_SESSION['steamid']."' AND `level` = '1';";
         $result = mysqli_query($connection, $query) or die("Connection error".mysqli_error($connection));
 
         $USERID2 = 0;
