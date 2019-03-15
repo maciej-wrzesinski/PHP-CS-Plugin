@@ -58,24 +58,12 @@
     while($row = mysqli_fetch_row($result))
     {
         $USERID = $row[0];
-        $USERLEVEL = $row[1];
+        $template->assignVariable("isadmin", $row[1]);
     }
 
     if($USERID == 0){//dodawanie usera
         $query = "INSERT INTO `csp_users` (sid, level, opinion) VALUES ('".$_SESSION['steamid']."', '0', '');";
         $result = mysqli_query($connection, $query) or die("Connection error".mysqli_error($connection));
-    }
-    else{
-        $query = "SELECT id FROM `csp_users` WHERE `sid` = '".$_SESSION['steamid']."' AND `level` = '1';";
-        $result = mysqli_query($connection, $query) or die("Connection error".mysqli_error($connection));
-
-        $USERID2 = 0;
-        while($row = mysqli_fetch_row($result))
-            $USERID2 = $row[0];
-
-        if($USERID2 != 0){
-            $template->assignVariable("isadmin", "1");
-        }
     }
 
 
