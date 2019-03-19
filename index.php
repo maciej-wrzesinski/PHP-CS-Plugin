@@ -28,8 +28,7 @@
     require('classes/language/Language.php');
     $lang = new Language();
 
-    $fileLang = $lang->getCurrentLanguage();
-    include_once(dirname(__FILE__).'/languages/'.$fileLang.'.php');
+    $lang->executeLanguageFile($lang->getCurrentLanguage());
 
 
     /*
