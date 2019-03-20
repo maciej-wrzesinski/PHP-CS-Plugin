@@ -5,7 +5,7 @@
 					<h5 class="header col s12 light">{$OPINIONSFROM}</h5>
 				</div>
 				<p class="hrr"></p>
-{if $logoutbutton != "" && $alreadyopinion == "0"}
+{if $logoutbutton != "" && $alreadyopinion == ""}
 				<form method="POST" action="opinions.php" id="formValidate" class="formValidate col s12" style="margin: auto; margin-top: 150px; margin-bottom: 150px;">
 					<div style="width: 70%; margin: auto;">
 						<center><input class="textwindow" type="text" name="opinion" /></center>
@@ -18,7 +18,7 @@
 				<div style="margin-bottom: 200px;">
 {foreach from=$opinion_list item=opinionn}
 					<div class="card-panel card-panel2">
-						<span style="font-size: 12px;">{$opinionn.steamekk}</span>
+						<span style="font-size: 12px;"><a href=\"http://steamcommunity.com/profiles/{$opinionn.steamnumber}" >{$opinionn.steamnumber}</a></span>
 						<br /><br />{$opinionn.opinion}
 					</div>
 {/foreach}

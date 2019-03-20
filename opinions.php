@@ -1,112 +1,140 @@
-<?php require 'includes/steamauth/steamauth.php'; ?>
 <?php
-	include("config/global.php");
-	include("includes/functions.php");
-	include("includes/lang.php");
-	include("config/db.php");
-	
-	////Smarty 
-	require_once("smarty/Smarty.class.php");
-	$smarty = new Smarty();
-    $smarty->error_reporting = 0;
+    /*
+     * Login handling
+     */
+    require('classes/login/LoginFacade.php');
+    $login = new LoginFacade();
 
-    $USERID = 0;
-	if(!isset($_SESSION['steamid']))
-	{
-		$smarty->assign("loginbuttonn", "<a href='?login'>".$lang['LOGIN']."</a>");
-		$smarty->assign("loginbutton2", "<a href='?login' class='btn-flat'>".$lang['LOGIN']."</a>");
-		$smarty->assign("loginbutton", "<a href='?login'><img src='".$WWW_URL."assets/images/steamlogin.png'></a>");
-	}
-	else
-	{
-        $STEAMID = toSteamID($_SESSION['steamid']);
+    if(isset($_GET['login']))
+    {
+        $_SESSION['steamid'] = $login->login();
+    }
+    elseif(isset($_GET['logout']))
+    {
+        $login->logout();
+    }
 
-		$smarty->assign("logoutbutton", "<a href='?logout' class='btn-flat'>".$lang['LOGOUT']."</a>");
-		$smarty->assign("logoutbuttonn", "<a href='?logout'>".$lang['LOGOUT']."</a>");
-        include("includes/steamauth/userInfo.php");
 
-		$query = "SELECT id FROM `".$TABLE_USERS."` WHERE `sid` = '".$STEAMID."';";
-		$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-		while($row = mysqli_fetch_row($result))
-			$USERID = $row[0];
-		
-		$query = "SELECT id FROM `".$TABLE_USERS."` WHERE `sid` = '".$STEAMID."' AND `level` = '1';";
-		$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-		
-		$USERID2 = 0;
-		while($row = mysqli_fetch_row($result))
-			$USERID2 = $row[0];
-		
-		if($USERID2 != 0){
-			$smarty->assign("isadmin", "1");
-		}
-	}
-	
-	
-	if(isset($_POST['opinion']) && $_POST['opinion'] != "" && $USERID > 0){
-		$opinion = mysql_escape_mimic(stripslashes($_POST['opinion']));
-		if((strpos($opinion, 'drop') !== false) || (strpos($opinion, 'table') !== false))
-			$opinion = "XD1";
-		
-		if(!preg_match("/^[^\\\'\`\%\-\"\;]+$/", $opinion) || strlen($opinion) < 1)
-			$opinion = "XD2";
-		
-		if(strlen($opinion) > 200)
-			$opinion = "XD3";
-		
-		$query = "UPDATE `".$TABLE_USERS."` SET opinion = '".$opinion."' WHERE id = ".$USERID.";";
-		$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-	}
-	
-	
-	
-	if($USERID > 0){
-		$query = "SELECT opinion FROM `".$TABLE_USERS."` WHERE id = ".$USERID." order by id desc;";
-		$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-		$row = mysqli_fetch_row($result);
-		if($row[0] != "")
-			$smarty->assign("alreadyopinion", "1");
-		else
-			$smarty->assign("alreadyopinion", "0");
-	}
-	else
-		$smarty->assign("alreadyopinion", "1");
-	
-	$query = "SELECT * FROM `".$TABLE_USERS."` WHERE opinion <> '' order by id desc;";
-	$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-	while($row = mysqli_fetch_row($result)){
-		$row[1] = "<a href=\"http://steamcommunity.com/profiles/".getSteamID64($row[1])."/\" >".$row[1]."</a>";
-		$opinion = array(
-			//0 to id
-			"id"		=> $row[0],
-			"steamekk"		=> $row[1],
-			"opinion"	=> $row[3]
-		);
-		$opinion_list[] = $opinion;
-	}
-	$smarty->assign("opinion_list", $opinion_list);
-	
-	$smarty->assign("TITLE", $lang['TITLE']);
-	$smarty->assign("TITLE2", $lang['OPINIONS']);
-	
-	$smarty->assign("HOME", $lang['HOME']);
-	$smarty->assign("PLUGINS", $lang['PLUGINS']);
-	$smarty->assign("BUY", $lang['BUY']);
-	$smarty->assign("USERP", $lang['USERP']);
-	$smarty->assign("ADMIN", $lang['ADMIN']);
-	$smarty->assign("OPINIONS", $lang['OPINIONS']);
-	
-	$smarty->assign("OPINIONSABOUT", $lang['OPINIONSABOUT']);
-	$smarty->assign("OPINIONSFROM", $lang['OPINIONSFROM']);
-	$smarty->assign("SUBMITOPINION", $lang['SUBMITOPINION']);
-	
-	//Funny quotes
-	$smarty->assign("QUOTES", $lang['QUOTE'][array_rand($lang['QUOTE'])]);
-	$smarty->assign("DESCRIPTION", $lang['DESCRIPTION']);
-	$smarty->assign("KEYWORDS", $lang['KEYWORDS']);
-	
-	////Display HTML
-	$smarty->display('_HEADER.tpl');
-	$smarty->display('opinions.tpl');
-	$smarty->display('_FOOTER.tpl');
-?>
+    /*
+     * Template handling
+     */
+    require('classes/template/TemplateFacade.php');
+    $template = new TemplateFacade();
+
+
+    /*
+     * Language handling
+     */
+    require('classes/language/Language.php');
+    $lang = new Language();
+
+    include_once(dirname(__FILE__).'/languages/'.$lang->getCurrentLanguage().'.php');
+
+
+    /*
+     * Something handling
+     */
+    if(!isset($_SESSION['steamid']) || $_SESSION['steamid'] === 'fail')
+    {
+        $template->assignVariable("login_button_main", "1");
+        $template->assignVariable("login_button_mobile", "1");
+        $template->assignVariable("login_button_header", "1");
+    }
+    else
+    {
+        $template->assignVariable("logout_button_header", "1");
+        $template->assignVariable("logout_button_mobile", "1");
+
+
+        /*
+         * PDO handling
+         */
+        require_once('classes/database/DatabaseSingleton.php');
+        $db = DatabaseSingleton::getInstance();
+        $connection = $db->getConnection();
+
+
+        $queryPDO = $connection->prepare('SELECT level FROM csp_users WHERE sid = ?');
+        $queryPDO->execute([$_SESSION['steamid']]);
+        while ($row = $queryPDO->fetch())
+        {
+            $template->assignVariable("isadmin", $row[0]);
+        }
+    }
+
+
+    /*
+     * This is something that will change for sure with every subpage
+     */
+    $template->assignVariable("TITLE2", $lang['OPINIONS']);
+
+
+    /*
+     * This PDO action that will vary on every subpage
+     */
+    require_once('classes/database/DatabaseSingleton.php');
+    $db = DatabaseSingleton::getInstance();
+    $connection = $db->getConnection();
+
+
+    $queryPDO = $connection->prepare('SELECT * FROM csp_authors');
+    $queryPDO->execute();
+    while ($row = $queryPDO->fetch())
+    {
+        $author = array(
+            "name"	=> $row[1],
+            "link"	=> $row[2]
+        );
+        $author_list[] = $author;
+    }
+    $template->assignVariable("author_list", $author_list);
+
+
+    $queryPDO = $connection->prepare('SELECT opinion FROM csp_users WHERE sid = ?');
+    $queryPDO->execute([$_SESSION['steamid']]);
+    while ($row = $queryPDO->fetch())
+    {
+        if($row[0] != '')
+            $template->assignVariable("alreadyopinion", "1");
+    }
+
+
+    $queryPDO = $connection->prepare('SELECT * FROM csp_users WHERE opinion <> \'\' order by id desc');
+    $queryPDO->execute();
+    while ($row = $queryPDO->fetch())
+    {
+        $opinion = array(
+            "id"		    => $row[0],
+            "steamnumber"	=> $row[1],
+            "opinion"   	=> $row[3]
+        );
+        $opinion_list[] = $opinion;
+    }
+    $template->assignVariable("opinion_list", $opinion_list);
+
+
+    /*
+     * Show HTML
+     */
+    $fileName = basename(__FILE__, '.php');
+    $template->displayHTML($fileName);
+
+
+
+
+
+
+if(isset($_POST['opinion']) && $_POST['opinion'] != "" && $USERID > 0){
+    $opinion = mysql_escape_mimic(stripslashes($_POST['opinion']));
+    if((strpos($opinion, 'drop') !== false) || (strpos($opinion, 'table') !== false))
+        $opinion = "XD1";
+
+    if(!preg_match("/^[^\\\'\`\%\-\"\;]+$/", $opinion) || strlen($opinion) < 1)
+        $opinion = "XD2";
+
+    if(strlen($opinion) > 200)
+        $opinion = "XD3";
+
+    $query = "UPDATE `".$TABLE_USERS."` SET opinion = '".$opinion."' WHERE id = ".$USERID.";";
+    $result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
+}

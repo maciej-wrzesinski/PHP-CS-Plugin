@@ -56,7 +56,8 @@
 
         $queryPDO = $connection->prepare('SELECT level FROM csp_users WHERE sid = ?');
         $queryPDO->execute([$_SESSION['steamid']]);
-        while ($row = $queryPDO->fetch()) {
+        while ($row = $queryPDO->fetch())
+        {
             $template->assignVariable("isadmin", $row[0]);
         }
     }
