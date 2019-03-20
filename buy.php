@@ -1,78 +1,95 @@
-<?php require 'includes/steamauth/steamauth.php'; ?>
 <?php
-	include("config/db.php");
-	include("config/global.php");
-	include("includes/functions.php");
-	include("includes/lang.php");
-	
-	////Smarty 
-	require_once("smarty/Smarty.class.php");
-	$smarty=new Smarty();
-    $smarty->error_reporting = 0;
+    /*
+     * Login handling
+     */
+    require('classes/login/LoginFacade.php');
+    $login = new LoginFacade();
 
-	if(!isset($_SESSION['steamid'])){
-		$smarty->assign("loginbuttonn", "<a href='?login'>".$lang['LOGIN']."</a>");
-		$smarty->assign("loginbutton2", "<a href='?login' class='btn-flat'>".$lang['LOGIN']."</a>");
-	}  else {
-        $STEAMID = toSteamID($_SESSION['steamid']);
-		$smarty->assign("logoutbutton", "<a href='?logout' class='btn-flat'>".$lang['LOGOUT']."</a>");
-		$smarty->assign("logoutbuttonn", "<a href='?logout'>".$lang['LOGOUT']."</a>");
-		include ('includes/steamauth/userInfo.php');
-		
-		$query = "SELECT id FROM `".$TABLE_USERS."` WHERE `sid` = '".$STEAMID."' AND `level` = '1';";
-		$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-		
-		while($row = mysqli_fetch_row($result))
-			$USERID = $row[0];
-		
-		if($USERID != 0){
-			$smarty->assign("isadmin", "1");
-		}
-		
-	}
-	
-	$query = "SELECT * FROM `".$TABLE_AUTHORS."`;";
-	$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-	
-	$i = 0;
-	while($row = mysqli_fetch_row($result)){
-		if($i == 3) break;
-		$author = array(
-			"name"	=> $row[1],
-			"link"	=> $row[2]
-		);
-		$author_list[] = $author;
-		$i += 1;
-	}
-	$smarty->assign("author_list", $author_list);
-	
-	$smarty->assign("TITLE", $lang['TITLE']);
-	$smarty->assign("TITLE2", $lang['BUY']);
-	
-	$smarty->assign("HOME", $lang['HOME']);
-	$smarty->assign("PLUGINS", $lang['PLUGINS']);
-	$smarty->assign("BUY", $lang['BUY']);
-	$smarty->assign("USERP", $lang['USERP']);
-	$smarty->assign("ADMIN", $lang['ADMIN']);
-	$smarty->assign("OPINIONS", $lang['OPINIONS']);
-	
-	$smarty->assign("YALIKE", $lang['YALIKE']);
-	$smarty->assign("CONTACTUS", $lang['CONTACTUS']);
-	$smarty->assign("WHYUS", $lang['WHYUS']);
-	$smarty->assign("WHYUS1", $lang['WHYUS1']);
-	$smarty->assign("WHYUS2", $lang['WHYUS2']);
-	$smarty->assign("WHYUS3", $lang['WHYUS3']);
-	$smarty->assign("WHYUS4", $lang['WHYUS4']);
-	$smarty->assign("MORE", $lang['MORE']);
-	$smarty->assign("MOREPLUGINS", $lang['MOREPLUGINS']);
-	
-	//Funny quotes
-	$smarty->assign("QUOTES", $lang['QUOTE'][array_rand($lang['QUOTE'])]);
-	$smarty->assign("DESCRIPTION", $lang['DESCRIPTION']);
-	$smarty->assign("KEYWORDS", $lang['KEYWORDS']);
-	
-	////Display HTML
-	$smarty->display('_HEADER.tpl');
-	$smarty->display('buy.tpl');
-	$smarty->display('_FOOTER.tpl');
-?>
+    if(isset($_GET['login']))
+    {
+        $_SESSION['steamid'] = $login->login();
+    }
+    elseif(isset($_GET['logout']))
+    {
+        $login->logout();
+    }
+
+
+    /*
+     * Template handling
+     */
+    require('classes/template/TemplateFacade.php');
+    $template = new TemplateFacade();
+
+
+    /*
+     * Language handling
+     */
+    require('classes/language/Language.php');
+    $lang = new Language();
+
+    include_once(dirname(__FILE__).'/languages/'.$lang->getCurrentLanguage().'.php');
+
+
+    /*
+     * Something handling
+     */
+    if(!isset($_SESSION['steamid']) || $_SESSION['steamid'] === 'fail')
+    {
+        $template->assignVariable("login_button_main", "1");
+        $template->assignVariable("login_button_mobile", "1");
+        $template->assignVariable("login_button_header", "1");
+    }
+    else
+    {
+        $template->assignVariable("logout_button_header", "1");
+        $template->assignVariable("logout_button_mobile", "1");
+
+
+        /*
+         * PDO handling
+         */
+        require_once('classes/database/DatabaseSingleton.php');
+        $db = DatabaseSingleton::getInstance();
+        $connection = $db->getConnection();
+
+
+        $queryPDO = $connection->prepare('SELECT level FROM csp_users WHERE sid = ?');
+        $queryPDO->execute([$_SESSION['steamid']]);
+        while ($row = $queryPDO->fetch()) {
+            $template->assignVariable("isadmin", $row[0]);
+        }
+    }
+
+
+    /*
+     * This is something that will change for sure with every subpage
+     */
+    $template->assignVariable("TITLE2", $lang['BUY']);
+
+
+    /*
+     * This PDO action that will vary on every subpage
+     */
+    require_once('classes/database/DatabaseSingleton.php');
+    $db = DatabaseSingleton::getInstance();
+    $connection = $db->getConnection();
+
+
+    $queryPDO = $connection->prepare('SELECT * FROM csp_authors');
+    $queryPDO->execute();
+    while ($row = $queryPDO->fetch()) {
+        $author = array(
+            "name"	=> $row[1],
+            "link"	=> $row[2]
+        );
+        $author_list[] = $author;
+    }
+    $template->assignVariable("author_list", $author_list);
+
+
+    /*
+     * Show HTML
+     */
+    $fileName = basename(__FILE__, '.php');
+    $template->displayHTML($fileName);

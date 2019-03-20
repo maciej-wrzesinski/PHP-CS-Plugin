@@ -49,7 +49,7 @@
         /*
          * PDO handling
          */
-        require('classes/database/DatabaseSingleton.php');
+        require_once('classes/database/DatabaseSingleton.php');
         $db = DatabaseSingleton::getInstance();
         $connection = $db->getConnection();
 
