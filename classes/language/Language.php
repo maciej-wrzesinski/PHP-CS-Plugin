@@ -38,11 +38,6 @@ class Language
         $this->currentLang = $lang;
     }
 
-    public function executeLanguageFile($lang)
-    {
-        include_once(dirname(__FILE__).'/languages/'.$lang.'.php');
-    }
-
     private function IsLanguageAvailable($lang)
     {
         return $this->DoesLanguageFileExist($lang);

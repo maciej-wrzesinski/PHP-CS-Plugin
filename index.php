@@ -28,7 +28,7 @@
     require('classes/language/Language.php');
     $lang = new Language();
 
-    $lang->executeLanguageFile($lang->getCurrentLanguage());
+    include_once(dirname(__FILE__).'/languages/'.$lang->getCurrentLanguage().'.php');
 
 
     /*
@@ -44,25 +44,21 @@
     {
         $template->assignVariable("logout_button_header", "1");
         $template->assignVariable("logout_button_mobile", "1");
-    }
 
-    require('classes/database/DatabaseSingleton.php');
-    $db = DatabaseSingleton::getInstance();
-    $connection = $db->getConnection();
 
-    $USERID = 0;
-    $USERLEVEL = 0;
-    $query = "SELECT id, level FROM `csp_users` WHERE `sid` = '".$_SESSION['steamid']."';";
-    $result = mysqli_query($connection, $query) or die("Connection error".mysqli_error($connection));
-    while($row = mysqli_fetch_row($result))
-    {
-        $USERID = $row[0];
-        $template->assignVariable("isadmin", $row[1]);
-    }
+        /*
+         * PDO handling
+         */
+        require('classes/database/DatabaseSingleton.php');
+        $db = DatabaseSingleton::getInstance();
+        $connection = $db->getConnection();
 
-    if($USERID == 0){//dodawanie usera
-        $query = "INSERT INTO `csp_users` (sid, level, opinion) VALUES ('".$_SESSION['steamid']."', '0', '');";
-        $result = mysqli_query($connection, $query) or die("Connection error".mysqli_error($connection));
+
+        $queryPDO = $connection->prepare('SELECT level FROM csp_users WHERE sid = ?');
+        $queryPDO->execute([$_SESSION['steamid']]);
+        while ($row = $queryPDO->fetch()) {
+            $template->assignVariable("isadmin", $row[0]);
+        }
     }
 
 
