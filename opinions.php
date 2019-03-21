@@ -99,14 +99,13 @@
     }
 
 
-    $queryPDO = $connection->prepare('SELECT * FROM csp_users WHERE opinion <> \'\' order by id desc');
+    $queryPDO = $connection->prepare('SELECT sid, opinion FROM csp_users WHERE opinion <> \'\'');
     $queryPDO->execute();
     while ($row = $queryPDO->fetch())
     {
         $opinion = array(
-            "id"		    => $row[0],
-            "steamnumber"	=> $row[1],
-            "opinion"   	=> $row[3]
+            "steamnumber"   => $row[0],
+            "opinion"       => $row[1]
         );
         $opinion_list[] = $opinion;
     }
