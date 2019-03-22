@@ -113,6 +113,17 @@
 
 
     /*
+     * This is POST/GET action
+     */
+    if(isset($_POST['opinion']) && $_POST['opinion'] != "" && strlen($_SESSION['steamid']) > 10){
+        $opinion = stripslashes($_POST['opinion']);
+
+        $queryPDO = $connection->prepare('UPDATE csp_users SET opinion = ? WHERE sid = ?');
+        $queryPDO->execute([$opinion, $_SESSION['steamid']]);
+    }
+
+
+    /*
      * Show HTML
      */
     $fileName = basename(__FILE__, '.php');
@@ -123,17 +134,4 @@
 
 
 
-if(isset($_POST['opinion']) && $_POST['opinion'] != "" && $USERID > 0){
-    $opinion = mysql_escape_mimic(stripslashes($_POST['opinion']));
-    if((strpos($opinion, 'drop') !== false) || (strpos($opinion, 'table') !== false))
-        $opinion = "XD1";
 
-    if(!preg_match("/^[^\\\'\`\%\-\"\;]+$/", $opinion) || strlen($opinion) < 1)
-        $opinion = "XD2";
-
-    if(strlen($opinion) > 200)
-        $opinion = "XD3";
-
-    $query = "UPDATE `".$TABLE_USERS."` SET opinion = '".$opinion."' WHERE id = ".$USERID.";";
-    $result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-}

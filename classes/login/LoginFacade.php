@@ -10,6 +10,7 @@ class LoginFacade
     {
         ob_start();
         session_start();
+        $_SESSION['steamid'] = '0';
         $this->openid = new LightOpenID($_SERVER['PHP_SELF']);
     }
 
