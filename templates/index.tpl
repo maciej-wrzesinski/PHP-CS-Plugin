@@ -6,7 +6,7 @@
 					<h5 class="header col s12 light">{$TITLESMALL}</h5>
 				</div>
 				<div class="row center">
-{if $login_button_main == ""}
+{if $login_button_main == "1"}
 					<a href='?login'><img src='./assets/images/steamloginv2.png'></a>
 {else}
 					<a href="/plugins.php"><span class="btn-flat">{$LOOKAROUND}</span></a>

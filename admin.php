@@ -1,37 +1,80 @@
-<?php require 'includes/steamauth/steamauth.php'; ?>
 <?php
-	include("config/global.php");
-	include("config/db.php");
-	include("includes/functions.php");
-	include("includes/lang.php");
-	
-	////Smarty 
-	require_once("smarty/libs/Smarty.class.php");
-	$smarty=new Smarty();
-	
-	$USERID = 0;
-	$STEAMID = toSteamID($_SESSION['steamid']);
-	if(!isset($_SESSION['steamid'])){
-		Redirect($WWW_URL);
-		die("You don't have acces here");
-	}  else {
-		$smarty->assign("logoutbutton", "<a href='?logout' class='btn-flat'>".$lang['LOGOUT']."</a>");
-		$smarty->assign("logoutbuttonn", "<a href='?logout'>".$lang['LOGOUT']."</a>");
-		include ('includes/steamauth/userInfo.php');
-		
-		$query = "SELECT id FROM `".$TABLE_USERS."` WHERE `sid` = '".$STEAMID."' AND `level` = '1';";
-		$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-		
-		while($row = mysqli_fetch_row($result))
-			$USERID = $row[0];
-		
-		if($USERID == 0){
-			Redirect($WWW_URL);
-			die("You don't have acces here");
-		}
-		else
-			$smarty->assign("isadmin", "1");
-	}
+    /*
+     * Login handling
+     */
+    require('classes/login/LoginFacade.php');
+    $login = new LoginFacade();
+
+    if(isset($_GET['login']))
+    {
+        $_SESSION['steamid'] = $login->login();
+    }
+    elseif(isset($_GET['logout']))
+    {
+        $login->logout();
+    }
+
+    /*
+     * Template handling
+     */
+    require('classes/template/TemplateFacade.php');
+    $template = new TemplateFacade();
+
+
+    /*
+     * Language handling
+     */
+    require('classes/language/Language.php');
+    $lang = new Language();
+
+    include_once(dirname(__FILE__).'/languages/'.$lang->getCurrentLanguage().'.php');
+
+
+    /*
+     * Something handling
+     */
+    if(!isset($_SESSION['steamid']) || $_SESSION['steamid'] === '0')
+    {
+        header('Location: '.substr($_SERVER['PHP_SELF'], 0, strrpos($_SERVER['PHP_SELF'], "/")), true, 302);
+    }
+    else
+    {
+        $template->assignVariable("logout_button_header", "1");
+        $template->assignVariable("logout_button_mobile", "1");
+
+
+        /*
+         * PDO handling
+         */
+        require_once('classes/database/DatabaseSingleton.php');
+        $db = DatabaseSingleton::getInstance();
+        $connection = $db->getConnection();
+
+
+        $queryPDO = $connection->prepare('SELECT level FROM csp_users WHERE sid = ?');
+        $queryPDO->execute([$_SESSION['steamid']]);
+        while ($row = $queryPDO->fetch())
+        {
+            $template->assignVariable("isadmin", $row[0]);
+        }
+
+
+
+    }
+
+
+    /*
+     * This is something that will change for sure with every subpage
+     */
+    $template->assignVariable("TITLE2", $lang['ADMIN']);
+
+
+    /*
+     * Show HTML
+     */
+    $fileName = basename(__FILE__, '.php');
+    $template->displayHTML($fileName);
+
 	
 	//Lista pluginów 
 	$query = "SELECT * FROM `".$TABLE_PLUGINS."` WHERE `price` <> '0';";
@@ -64,29 +107,6 @@
 		$ticket_list[] = $ticket;
 	}
 	$smarty->assign("ticket_list", $ticket_list);
-	
-	$smarty->assign("TITLE", $lang['TITLE']);
-	$smarty->assign("TITLE2", $lang['ADMIN']);
-	
-	$smarty->assign("HOME", $lang['HOME']);
-	$smarty->assign("PLUGINS", $lang['PLUGINS']);
-	$smarty->assign("BUY", $lang['BUY']);
-	$smarty->assign("USERP", $lang['USERP']);
-	$smarty->assign("ADMIN", $lang['ADMIN']);
-	$smarty->assign("OPINIONS", $lang['OPINIONS']);
-	
-	$smarty->assign("YOURLICENSES", $lang['YOURLICENSES']);
-	$smarty->assign("CLICKIP", $lang['CLICKIP']);
-	$smarty->assign("NOLICENSES", $lang['NOLICENSES']);
-	$smarty->assign("BUYSOME", $lang['BUYSOME']);
-	
-	$smarty->assign("ID", $lang['ID']);
-	$smarty->assign("TEXT", $lang['TEXT']);
-	$smarty->assign("WRITTEN", $lang['WRITTEN']);
-	$smarty->assign("STATUS", $lang['STATUS']);
-	$smarty->assign("SEEN", $lang['SEEN']);
-	$smarty->assign("PENDING", $lang['PENDING']);
-	$smarty->assign("HELPDESK", $lang['HELPDESK']);
 	
 	//dodawanie licki
 	if(isset($_POST['formsteamid']) && isset($_POST['formpluginid'])){
@@ -249,37 +269,3 @@
 		$plugins_list[] = $plugin;
 	}
 	$smarty->assign("plugins_list", $plugins_list);
-	
-	$smarty->assign("ADDLIC", $lang['ADDLIC']);
-	$smarty->assign("SUCCESLIC", $lang['SUCCESLIC']);
-	$smarty->assign("FAILLIC", $lang['FAILLIC']);
-	$smarty->assign("VIEWLIC", $lang['VIEWLIC']);
-	$smarty->assign("ADD", $lang['ADD']);
-	$smarty->assign("PANEL", $lang['PANEL']);
-	$smarty->assign("EDITPLUG", $lang['EDITPLUG']);
-	$smarty->assign("DELLICENCEFAIL", $lang['DELLICENCEFAIL']);
-	$smarty->assign("DELLICENCESUCC", $lang['DELLICENCESUCC']);
-	$smarty->assign("INFOFAILEDIT", $lang['INFOFAILEDIT']);
-	$smarty->assign("INFOSUCCEDIT", $lang['INFOSUCCEDIT']);
-	$smarty->assign("ADDPLUG", $lang['ADDPLUG']);
-	$smarty->assign("NAMETAKEN", $lang['NAMETAKEN']);
-	$smarty->assign("PLUGADDED", $lang['PLUGADDED']);
-	$smarty->assign("FAILEDADDPLUG", $lang['FAILEDADDPLUG']);
-	$smarty->assign("AUTHOR", $lang['AUTHOR']);
-	$smarty->assign("THENAME", $lang['THENAME']);
-	$smarty->assign("UQSHORT", $lang['UQSHORT']);
-	$smarty->assign("URL", $lang['URL']);
-	$smarty->assign("DESCPL", $lang['DESCPL']);
-	$smarty->assign("PRICE", $lang['PRICE']);
-	$smarty->assign("DESC", $lang['DESC']);
-	
-	//Funny quotes
-	$smarty->assign("QUOTES", $lang['QUOTE'][array_rand($lang['QUOTE'])]);
-	$smarty->assign("DESCRIPTION", $lang['DESCRIPTION']);
-	$smarty->assign("KEYWORDS", $lang['KEYWORDS']);
-	
-	////Display HTML
-	$smarty->display('_HEADER.tpl');
-	$smarty->display('admin.tpl');
-	$smarty->display('_FOOTER.tpl');
-?>

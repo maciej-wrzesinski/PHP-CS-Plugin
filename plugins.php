@@ -34,7 +34,7 @@
     /*
      * Something handling
      */
-    if(!isset($_SESSION['steamid']) || $_SESSION['steamid'] === 'fail')
+    if(!isset($_SESSION['steamid']) || $_SESSION['steamid'] === '0')
     {
         $template->assignVariable("login_button_main", "1");
         $template->assignVariable("login_button_mobile", "1");
@@ -90,60 +90,39 @@
     $template->assignVariable("author_list", $author_list);
 
 
+    $queryPDO = $connection->prepare('SELECT * FROM csp_plugin INNER JOIN csp_authors ON csp_plugin.author = csp_authors.id order by price desc');
+    $queryPDO->execute();
+    while ($row = $queryPDO->fetch())
+    {
+        /*$query2 = "SELECT * FROM `".$TABLE_LICENSES."` WHERE plugin_id = '".$row[0]."' AND user_id = '".$USERID."';";
+        $result2 = mysqli_query($sql, $query2) or die("Connection error".mysqli_error($sql));
+        $hasthisplugin = 0;
+        while($row2 = mysqli_fetch_row($result2)){
+            $hasthisplugin = 1;
+        }*/
+
+        $plugin = array(
+            "id"		=> $row[0],
+            "author"	=> $row[1],
+            "name"		=> $row[2],
+            "short_name"=> $row[3],
+            "price"		=> $row[4],
+            "price_euro" => round(((int)$row[4])/4.0, 0),
+            "price_dolar" => round(((int)$row[4])/3.5, 0),
+            "time"		=> $row[5],
+            "link"		=> $row[6],
+            "desc"		=> $row[7],
+            "author_name"	=> $row[10],
+            "author_sid"	=> $row[11],
+            "hasthisplugin"	=> 1
+        );
+        $plugin_list[] = $plugin;
+    }
+    $template->assignVariable("plugin_list", $plugin_list);
+
+
     /*
      * Show HTML
      */
     $fileName = basename(__FILE__, '.php');
     $template->displayHTML($fileName);
-
-
-	
-	$query = "SELECT * FROM `".$TABLE_PLUGINS."` INNER JOIN `".$TABLE_AUTHORS."` ON `".$TABLE_PLUGINS."`.`author` = `".$TABLE_AUTHORS."`.`id` order by price desc;";
-	$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-	
-	while($row = mysqli_fetch_row($result)){
-		
-		$query2 = "SELECT * FROM `".$TABLE_LICENSES."` WHERE plugin_id = '".$row[0]."' AND user_id = '".$USERID."';";
-		$result2 = mysqli_query($sql, $query2) or die("Connection error".mysqli_error($sql));
-		$hasthisplugin = 0;
-		while($row2 = mysqli_fetch_row($result2)){
-			$hasthisplugin = 1;
-		}
-		
-		if($lang_file == 'lang.pl.php')
-			$plugin = array(
-				//0 to id
-				"id"		=> $row[0],
-				"author"	=> $row[1],
-				"name"		=> $row[2],
-				"short_name"=> $row[3],
-				"price"		=> $row[4],
-				"price_euro" => round(((int)$row[4])/4.5, 0),
-				"price_dolar" => round(((int)$row[4])/3.5, 0),
-				"time"		=> $row[5],
-				"link"		=> $row[6],
-				"desc"		=> $row[8],
-				"author_name"	=> $row[10],
-				"author_sid"	=> $row[11],
-				"hasthisplugin"	=> $hasthisplugin
-			);
-		else
-			$plugin = array(
-				//0 to id
-				"id"		=> $row[0],
-				"author"	=> $row[1],
-				"name"		=> $row[2],
-				"short_name"=> $row[3],
-				"price"		=> $row[4],
-				"price_euro" => round(((int)$row[4])/4.0, 0),
-				"price_dolar" => round(((int)$row[4])/3.5, 0),
-				"time"		=> $row[5],
-				"link"		=> $row[6],
-				"desc"		=> $row[7],
-				"author_name"	=> $row[10],
-				"author_sid"	=> $row[11],
-				"hasthisplugin"	=> $hasthisplugin
-			);
-		$plugin_list[] = $plugin;
-	}
-	$smarty->assign("plugin_list", $plugin_list);

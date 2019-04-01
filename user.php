@@ -1,150 +1,138 @@
-<?php require 'includes/steamauth/steamauth.php'; ?>
 <?php
-	include("config/global.php");
-	include("config/db.php");
-	include("includes/functions.php");
-	include("includes/lang.php");
-	
-	////Smarty 
-	require_once("smarty/libs/Smarty.class.php");
-	$smarty=new Smarty();
-	
-	$USERID = 0;
-	$STEAMID = toSteamID($_SESSION['steamid']);
-	if(!isset($_SESSION['steamid'])){
-		Redirect($WWW_URL);
-		die("You don't have acces here");
-	}  else {
-		$smarty->assign("logoutbutton", "<a href='?logout' class='btn-flat'>".$lang['LOGOUT']."</a>");
-		$smarty->assign("logoutbuttonn", "<a href='?logout'>".$lang['LOGOUT']."</a>");
-		include ('includes/steamauth/userInfo.php');
-		
-		$query = "SELECT id FROM `".$TABLE_USERS."` WHERE `sid` = '".$STEAMID."';";
-		$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-		
-		$USERID = 0;
-		while($row = mysqli_fetch_row($result))
-			$USERID = $row[0];
-		
-		if($USERID == 0){
-			Redirect($WWW_URL);
-			die("You don't have acces here");
-		}
-		
-		//liczba ticketów
-		$query = "SELECT id_ticket FROM `".$TABLE_HELPDESK."` WHERE seen = 0 AND reciver = ".$USERID.";";
-		$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-		
-		$UNSEEN = mysqli_num_rows($result);
-		$smarty->assign("UNSEEN", $UNSEEN);
-		
-		$query = "SELECT id FROM `".$TABLE_USERS."` WHERE `sid` = '".$STEAMID."' AND `level` = '1';";
-		$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-		
-		$USERID2 = 0;
-		while($row = mysqli_fetch_row($result))
-			$USERID2 = $row[0];
-		
-		if($USERID2 != 0){
-			$smarty->assign("isadmin", "1");
-		}
-	}
-	
-	//Lista pluginów jego
-	$query = "SELECT * FROM `".$TABLE_LICENSES."` INNER JOIN `".$TABLE_PLUGINS."` ON `".$TABLE_PLUGINS."`.`id` = `".$TABLE_LICENSES."`.`plugin_id` WHERE `user_id` = '".$USERID."';";
-	$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-	while($row = mysqli_fetch_row($result)){
-		$plugin = array(
-			"plugin_name"	=> $row[5],
-			"plugin_id"	=> $row[3],
-			"plugin_dl"	=> $row[9]
-		);
-		$plugin_list[] = $plugin;
-	}
-	if(count($plugin_list) > 0)
-		$smarty->assign("plugin_list", $plugin_list);
-	else{
-		$smarty->assign("errorex", "1");
-	}
-	
-	//wysłanie ticketu
-	if(isset($_POST['textofticket'])){
-		$query = "SELECT DISTINCT id_ticket FROM `".$TABLE_HELPDESK."` WHERE 1;";
-		$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-		
-		$TicketID = mysqli_num_rows($result)+1;
-		$TicketText = mysql_escape_mimic($_POST['textofticket']);
-		
-		$query = "INSERT INTO `".$TABLE_HELPDESK."` (id_ticket, sender, reciver, text, timestamp_write) VALUES ('".$TicketID."', '".$USERID."', '0', '".$TicketText."', '".time()."');";
-		$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-		
-		$smarty->assign("sendticket", "1");
-		
-		Redirect($WWW_URL."ticket.php?id=".$TicketID);
-	}
-	
-	//Lista napisanych przez niego ticketów
-	$query = "SELECT tbl.id, tbl.id_ticket, tbl.sender, tbl.reciver, tbl.text, tbl.timestamp_write, tbl.seen 
-		FROM `".$TABLE_HELPDESK."` AS tbl
+    /*
+     * Login handling
+     */
+    require('classes/login/LoginFacade.php');
+    $login = new LoginFacade();
+
+    if(isset($_GET['login']))
+    {
+        $_SESSION['steamid'] = $login->login();
+    }
+    elseif(isset($_GET['logout']))
+    {
+        $login->logout();
+    }
+
+    /*
+     * Template handling
+     */
+    require('classes/template/TemplateFacade.php');
+    $template = new TemplateFacade();
+
+
+    /*
+     * Language handling
+     */
+    require('classes/language/Language.php');
+    $lang = new Language();
+
+    include_once(dirname(__FILE__).'/languages/'.$lang->getCurrentLanguage().'.php');
+
+
+    /*
+     * Something handling
+     */
+    if(!isset($_SESSION['steamid']) || $_SESSION['steamid'] === '0')
+    {
+        header('Location: '.substr($_SERVER['PHP_SELF'], 0, strrpos($_SERVER['PHP_SELF'], "/")), true, 302);
+    }
+    else
+    {
+        $template->assignVariable("logout_button_header", "1");
+        $template->assignVariable("logout_button_mobile", "1");
+
+
+        /*
+         * PDO handling
+         */
+        require_once('classes/database/DatabaseSingleton.php');
+        $db = DatabaseSingleton::getInstance();
+        $connection = $db->getConnection();
+
+
+        $queryPDO = $connection->prepare('SELECT level FROM csp_users WHERE sid = ?');
+        $queryPDO->execute([$_SESSION['steamid']]);
+        while ($row = $queryPDO->fetch())
+        {
+            $template->assignVariable("isadmin", $row[0]);
+        }
+
+
+        /*
+         * Something handling
+         */
+        $queryPDO = $connection->prepare('SELECT id_ticket FROM csp_helpdesk WHERE seen = 0 AND reciver = ?');
+        $queryPDO->execute([$_SESSION['steamid']]);
+
+        $template->assignVariable("UNSEEN", $queryPDO->rowCount());
+
+
+        /*
+         * Something handling
+         */
+        $queryPDO = $connection->prepare('SELECT * FROM csp_licenses INNER JOIN csp_plugin ON csp_plugin.id = csp_licenses.plugin_id WHERE user_id = ?');
+        $queryPDO->execute([$_SESSION['steamid']]);
+        $plugin_list = [];
+        while ($row = $queryPDO->fetch())
+        {
+            $plugin = array(
+                "plugin_name"	=> $row[5],
+                "plugin_id"	=> $row[3],
+                "plugin_dl"	=> $row[9]
+            );
+            $plugin_list[] = $plugin;
+        }
+        $template->assignVariable("plugin_list", $plugin_list);
+
+        //Lista napisanych przez niego ticketów
+        $queryPDO = $connection->prepare('SELECT tbl.id, tbl.id_ticket, tbl.sender, tbl.reciver, tbl.text, tbl.timestamp_write, tbl.seen 
+		FROM csp_helpdesk AS tbl
 		INNER JOIN 
-		(SELECT id_ticket,max(timestamp_write) as lastest FROM `".$TABLE_HELPDESK."` WHERE `sender` = '".$USERID."' OR `reciver` = '".$USERID."' GROUP BY id_ticket) AS tbl2
-		ON
-		tbl.timestamp_write = tbl2.lastest AND tbl.id_ticket = tbl2.id_ticket
-		ORDER BY tbl.timestamp_write DESC;";
-	$result = mysqli_query($sql, $query) or die("Connection error".mysqli_error($sql));
-	while($row = mysqli_fetch_row($result)){
-		$ticket = array(
-			"ticketid"	=> $row[1],
-			"text"	=> substr($row[4], 0, 30)."...",
-			"time"	=> gmdate("Y-m-d H:i", $row[5]),
-			"seen"	=> $row[6]
-		);
-		$ticket_list[] = $ticket;
-	}
-	if(count($ticket_list) > 0)
-		$smarty->assign("ticket_list", $ticket_list);
-	else
-		$smarty->assign("notickets", "1");
-	
-	$smarty->assign("TITLE", $lang['TITLE']);
-	$smarty->assign("TITLE2", $lang['USERP']);
-	
-	$smarty->assign("HOME", $lang['HOME']);
-	$smarty->assign("PLUGINS", $lang['PLUGINS']);
-	$smarty->assign("BUY", $lang['BUY']);
-	$smarty->assign("USERP", $lang['USERP']);
-	$smarty->assign("ADMIN", $lang['ADMIN']);
-	$smarty->assign("GENERATORVIP", $lang['GENERATORVIP']);
-	$smarty->assign("OPINIONS", $lang['OPINIONS']);
-	
-	$smarty->assign("PANEL", $lang['PANEL']);
-	$smarty->assign("YOURLICENSES", $lang['YOURLICENSES']);
-	$smarty->assign("CLICKIP", $lang['CLICKIP']);
-	$smarty->assign("NOLICENSES", $lang['NOLICENSES']);
-	$smarty->assign("BUYSOME", $lang['BUYSOME']);
-	$smarty->assign("DOWNLOAD", $lang['DOWNLOAD']);
-	$smarty->assign("HELPDESK", $lang['HELPDESK']);
-	$smarty->assign("TICKETSEND", $lang['TICKETSEND']);
-	$smarty->assign("HOWCANWEHELP", $lang['HOWCANWEHELP']);
-	$smarty->assign("NOTICKETS", $lang['NOTICKETS']);
-	$smarty->assign("ID", $lang['ID']);
-	$smarty->assign("TEXT", $lang['TEXT']);
-	$smarty->assign("WRITTEN", $lang['WRITTEN']);
-	$smarty->assign("STATUS", $lang['STATUS']);
-	$smarty->assign("SEEN", $lang['SEEN']);
-	$smarty->assign("PENDING", $lang['PENDING']);
-	$smarty->assign("WRITEATICKET", $lang['WRITEATICKET']);
-	$smarty->assign("TELLUSWHATSWRONG", $lang['TELLUSWHATSWRONG']);
-	$smarty->assign("SEND", $lang['SEND']);
-	$smarty->assign("NEW", $lang['NEW']);
-	
-	//Funny quotes
-	$smarty->assign("QUOTES", $lang['QUOTE'][array_rand($lang['QUOTE'])]);
-	$smarty->assign("DESCRIPTION", $lang['DESCRIPTION']);
-	$smarty->assign("KEYWORDS", $lang['KEYWORDS']);
-	
-	////Display HTML
-	$smarty->display('_HEADER.tpl');
-	$smarty->display('user.tpl');
-	$smarty->display('_FOOTER.tpl');
-?>
+		(SELECT id_ticket,max(timestamp_write) as lastest FROM csp_helpdesk WHERE `sender` = ? OR `reciver` = ? GROUP BY id_ticket) AS tbl2
+		ON tbl.timestamp_write = tbl2.lastest AND tbl.id_ticket = tbl2.id_ticket
+		ORDER BY tbl.timestamp_write DESC');
+        $queryPDO->execute([$_SESSION['steamid'], $_SESSION['steamid']]);
+        while ($row = $queryPDO->fetch())
+        {
+            $ticket = array(
+                "ticketid"	=> $row[1],
+                "text"	=> substr($row[4], 0, 30)."...",
+                "time"	=> gmdate("Y-m-d H:i", $row[5]),
+                "seen"	=> $row[6]
+            );
+            $ticket_list[] = $ticket;
+        }
+        $template->assignVariable("ticket_list", $ticket_list);
+
+
+        //wysłanie ticketu
+        if(isset($_POST['textofticket'])){
+            $queryPDO = $connection->prepare('SELECT DISTINCT id_ticket FROM `".$TABLE_HELPDESK."` WHERE 1');
+            $queryPDO->execute();
+
+            $TicketID = mysqli_num_rows($result)+1;
+            $TicketText = mysql_escape_mimic($_POST['textofticket']);
+
+            $queryPDO = $connection->prepare('INSERT INTO `".$TABLE_HELPDESK."` (id_ticket, sender, reciver, text, timestamp_write) VALUES (?, ?, 0, ?, ?)');
+            $queryPDO->execute([$TicketID, $_SESSION['steamid'], $TicketText, time()]);
+
+            $template->assignVariable("sendticket", "1");
+
+            header('Location: '.substr($_SERVER['PHP_SELF'], 0, strrpos($_SERVER['PHP_SELF'], "/"))."/ticket.php?id=".$TicketID, true, 302);
+        }
+
+    }
+
+
+    /*
+     * This is something that will change for sure with every subpage
+     */
+    $template->assignVariable("TITLE2", $lang['USERP']);
+
+
+    /*
+     * Show HTML
+     */
+    $fileName = basename(__FILE__, '.php');
+    $template->displayHTML($fileName);

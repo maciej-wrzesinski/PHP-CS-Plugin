@@ -34,7 +34,7 @@
     /*
      * Something handling
      */
-    if(!isset($_SESSION['steamid']) || $_SESSION['steamid'] === 'fail')
+    if(!isset($_SESSION['steamid']) || $_SESSION['steamid'] === '0')
     {
         $template->assignVariable("login_button_main", "1");
         $template->assignVariable("login_button_mobile", "1");

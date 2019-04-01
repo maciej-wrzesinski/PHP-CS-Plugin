@@ -10,7 +10,6 @@ class LoginFacade
     {
         ob_start();
         session_start();
-        $_SESSION['steamid'] = '0';
         $this->openid = new LightOpenID($_SERVER['PHP_SELF']);
     }
 
@@ -20,7 +19,7 @@ class LoginFacade
         if(!$this->openid->__get('mode'))
         {
             $this->openid->__set('identity', 'https://steamcommunity.com/openid');
-            echo '<meta http-equiv="REFRESH" content="0;url='. $this->openid->authUrl() .'">';
+            header('Location: '.$this->openid->authUrl(), true, 302);
         }
         elseif($this->openid->__get('mode') === 'cancel')
         {
@@ -32,7 +31,7 @@ class LoginFacade
             {
                 preg_match('/^https?:\/\/steamcommunity\.com\/openid\/id\/(7[0-9]{15,25}+)$/', $this->openid->__get('identity'), $matches);
 
-                echo '<meta http-equiv="REFRESH" content="0;url='. $_SERVER['PHP_SELF'] .'">';
+                //header('Location: '.$_SERVER['PHP_SELF'], true, 302);
                 return $matches[1]; //return steamid
             }
             else
@@ -41,19 +40,19 @@ class LoginFacade
             }
         }
 
-        return 'fail';
+        return '0';
     }
 
     public function logout()
     {
         session_unset();
         session_destroy();
-        echo '<meta http-equiv="REFRESH" content="0;url='. $_SERVER['PHP_SELF'] .'">';
+        header('Location: '.$_SERVER['PHP_SELF'], true, 302);
     }
 
     public function update()
     {
         unset($_SESSION['steam_uptodate']);
-        echo '<meta http-equiv="REFRESH" content="0;url='. $_SERVER['PHP_SELF'] .'">';
+        header('Location: '.$_SERVER['PHP_SELF'], true, 302);
     }
 }

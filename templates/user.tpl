@@ -69,7 +69,7 @@
 					<div style="width: 100%" class="mix YOURLICENSES">
 						<h1 class="header center orange-text">{$YOURLICENSES}</h1>
 						<div style="margin: auto;" class="card-panel col s12 m12 l10">
-{if $errorex ==""}
+{if $plugin_list != ""}
 							<center>{$CLICKIP}</center>
 							<div style="width: 50%; margin: auto;">
 								<p class="hrr"></p>
@@ -108,12 +108,12 @@
 								<p class="hrr"></p>
 							</div>
 							<br />
-{if $notickets == "1"}
+{if $ticket_list == ""}
 							<center>{$NOTICKETS}</center>
 							<br />
 {/if}
 							<div class="center"><a class="btn-flat" data-filter=".HELPDESKWRITE">{$WRITEATICKET}</a></div><br />
-{if $notickets != "1"}
+{if $ticket_list != ""}
 							<div style="width: 80%; margin: auto;">
 								<div class="center"><table class="lolek">
 									<tr>
